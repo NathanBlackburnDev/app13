@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="../static/css/register.css">
+
+    <!-- Display flashed messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h1 class="register-title">Create an Account</h1>
+
+    <!-- Register form -->
+    <div class="form-container">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="exampleInputUsername1" class="form-label">Username</label>
+                <input type="text" class="form-control" id="exampleInputUsername1" aria-describedby="emailHelp" name="username" placeholder="Alan Turing">
+                <div id="emailHelp" class="form-text">Username must be between 4 and 14 characters</div>
+            </div>
+            <div class="mb-3">
+            <label for="exampleInputEmail1" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="email" placeholder="alanturing@manchester.ac.uk">
+            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputLocation1" class="form-label">Location</label>
+                <input type="text" class="form-control" id="exampleInputLocation1" aria-describedby="emailHelp" name="location" placeholder="Cambridge">
+                <div id="emailHelp" class="form-text">Location must be between 4 and 60 characters</div>
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputWeight1" class="form-label">Weight</label>
+                <input type="text" class="form-control" id="exampleInputWeight1" aria-describedby="emailHelp" name="weight" placeholder="100 kg">
+                <div id="emailHelp" class="form-text">Weight must be between 4 and 6 characters</div>
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputHeight1" class="form-label">Height</label>
+                <input type="text" class="form-control" id="exampleInputHeight1" aria-describedby="emailHelp" name="height" placeholder="100 cm">
+                <div id="emailHelp" class="form-text">Username must be between 4 and 6 characters</div>
+            </div>
+            <div class="mb-3">
+            <label for="exampleInputPassword1" class="form-label">Password</label>
+            <input type="password" class="form-control" id="exampleInputPassword1" name="password" placeholder="••••••••">
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="exampleInputPassword1" name="confirm_password" placeholder="••••••••">
+            </div>
+            <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="exampleCheck1">
+            <label class="form-check-label" for="exampleCheck1">Agree to Terms & Conditions</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+    </div>
+{% endblock %}
