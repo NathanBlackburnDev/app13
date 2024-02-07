@@ -1,10 +1,11 @@
 from __main__ import app
 from flask import Flask, render_template, redirect, session, url_for, request, get_flashed_messages, flash
-import hashlib
+from flask_bcrypt import Bcrypt
 from db_connector import Database
 import re
 
 db = Database()
+bcrypt = Bcrypt(app)
 
 # Index page
 @app.route('/')
@@ -25,51 +26,25 @@ def register():
         weight = request.form['weight']
 
         # Valid patterns for user input
+        height = height.lower()
+        weight = weight.lower()
         existing_account = db.queryDB('SELECT * FROM users WHERE username = ? OR email = ?', [username, email])
-        username_pattern = '^[A-Za-z0-9_]+$'
-        email_pattern = '^[A-Za-z0-9@.]+$'
-        location_pattern = '^[A-Za-z ]+$'
-        height_pattern = '^[0-9]+ cm$'
-        weight_pattern = '^[0-9]+ kg$'
+        username_pattern = '^[A-Za-z0-9_]$'
+        email_pattern = '^[A-Za-z0-9@. ]$'
+        location_pattern = '^[A-Za-z ]$'
+        height_pattern = '^[0-9]+ kg$'
+        weight_pattern = '^[0-9]+ cm$'
+        password_pattern = r"^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$"
+        # Convert to correct measurements
+        weight = weight.lower()
+        height = height.lower()
+        # Hash user email + password
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        hashed_email = bcrypt.generate_password_hash(email).decode('utf-8')
 
-        # Check if user input is valid
-        if existing_account:
-            flash('Username or email already in use')
-        elif not re.match(username_pattern, username):
-            flash('Please enter valid username')
-        elif not (4 < len(username) <= 14):
-            flash('Username must be between 4 and 14 characters')
-        elif not re.match(email_pattern, email):
-            flash('Please enter a valid email')
-        elif not (6 < len(email) <= 40):
-            flash('Email must be between 6 and 40 characters')
-        elif not re.match(location_pattern, location):
-            flash('Please enter a valid location')
-        elif not (4 < len(location) <= 60):
-            flash('Location must be between 4 and 60 characters')
-        elif not re.match(height_pattern, height):
-            flash('Please enter a valid height in CM')
-        elif not (4 < len(height) <= 6):
-            flash('Height must be between 4 and 6 characters')
-        elif not re.match(weight_pattern, weight):
-            flash('Please enter a valid weight in KG')
-        elif not (4 < len(weight) <= 6):
-            flash('Weight must be between 4 and 6 characters')
-        elif not (6 < len(password) <= 40):
-            flash('Password must be between 6 and 40 characters')
-        elif password != confirm_password:
-            flash('Passwords must match')
-        else:
-            # Convert to correct measurements
-            weight = weight.lower()
-            height = height.lower()
-            # Hash user email + password
-            hashed_password = hashlib.md5(str(password).encode()).hexdigest()
-            hashed_email = hashlib.md5(str(email).encode()).hexdigest()
-
-            # Create user account
-            db.updateDB('INSERT INTO users (username, email, location, height, weight, password) VALUES (?, ?, ?, ?, ?, ?)', [username, hashed_email, location, height, weight, hashed_password])
-            return redirect(url_for('index'))
+        # Create user account
+        db.updateDB('INSERT INTO users (username, email, location, height, weight, password) VALUES (?, ?, ?, ?, ?, ?)', [username, hashed_email, location, height, weight, hashed_password])
+        return redirect(url_for('index'))
 
     # Return inital register page
     return render_template('register.html')
@@ -83,13 +58,12 @@ def login():
         password = request.form['password']
 
         # Get the password from database
-        hashed_password = hashlib.md5(str(password).encode()).hexdigest()
         user_account = db.queryDB('SELECT * FROM users WHERE username = ?', [username])
         stored_password = user_account[0][-1]
 
         if not user_account:
             flash('Account does not exist')
-        elif hashed_password != stored_password:
+        elif not bcrypt.check_password_hash(stored_password, password):
             flash('Incorrect password')
         # If the users password is correct
         else:
